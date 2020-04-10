@@ -1,77 +1,56 @@
-//AC Trie
-//Runs in O(T + sigma Pi)
-const int MAXS = 5100100, MAXN = 260, MAXP = 1010, MAXT = MAXP*MAXN;
-int T, Q;
-char text[MAXS], str[MAXS], pattern[MAXN][MAXP];
+class ACTrieNode {
+	const int MAXC = 26;
+public:
+    vector <ACTrieNode*> c;
+    ACTrieNode* flink;
+    bool endOfString;
 
-struct actrie
-{
-	actrie *flink, *next[26]; //failure link, trie structure
-	int pcnt;
-	actrie()
-	{
-		flink = NULL, pcnt = 0;
-		memset(next, 0, sizeof(next));
-	}
+    ACTrieNode() {
+        c = move(vector <ACTrieNode*>(MAXC));
+        endOfString = false;
+        flink = nullptr;
+    }
 };
 
-actrie *root, *que[MAXN*MAXP];
+void addPattern(ACTrieNode* node, string& s) {
+    for (int i = 0; i < s.size(); ++i) {
+        int ch = s[i] - 'a';
 
-void addPattern(char *P, int num)
-{
-	actrie *now = root;
-	for(int i = 0; P[i]; i++)
-	{
-		if(now->next[ P[i] - 'A' ] == NULL) now->next[ P[i] - 'A' ] = new actrie();
-		now = now->next[ P[i] - 'A' ];
-	}
-	
-	++now->pcnt;
+        if (node->c[ch] == nullptr) {
+            node->c[ch] = new ACTrieNode();
+        }
+
+        node = node->c[ch];
+    }
+
+    node->endOfString = true;
 }
 
-void build()
-{
-	int front = 0, rear = 1;
-	que[0] = root;
-	
-	while(front < rear)
-	{
-		actrie *now = que[front], *fnode;
-		for(int i = 0; i < 26; i++)
-			if(now->next[i])
-			{
-				fnode = now->flink;
-				while(fnode && fnode->next[i] == NULL) fnode = fnode->flink;
-				
-				if(fnode) now->next[i]->flink = fnode->next[i];
-				else now->next[i]->flink = root;
-				que[rear++] = now->next[i];
-			}
-		++front;
-	}
-}
+void buildACTrie(ACTrieNode* root) {
+    deque <ACTrieNode*> que;
+    que.push_back(root);
 
-int match(char * S)
-{
-	int ret = 0;
-	actrie *now = root;
-	
-	for(int i = 0; S[i]; i++)
-	{
-		while(now && now->next[ S[i]-'A' ] == NULL) now = now->flink;
-		
-		if(now)
-		{			
-			now = now->next[ S[i]-'A' ];
-			actrie *temp = now;
-			while(temp && temp->pcnt != -1)
-			{
-				ret += temp->pcnt;
-				temp->pcnt = -1;
-				temp = temp->flink;
-			}			
-		}
-		else now = root;
-	}
-	return ret;
+    while (!que.empty()) {
+        ACTrieNode *now = que.front();
+        que.pop_front();
+
+        for (int ch = 0; ch < 26; ++ch) {
+            if (now->c[ch]) {
+                ACTrieNode *fnode = now->flink;
+
+                while (fnode && fnode->c[ch] == nullptr) {
+                    fnode = fnode->flink;
+                }
+
+                if (fnode == nullptr) {
+                    now->c[ch]->flink = root;
+                } else {
+                    now->c[ch]->flink = fnode->c[ch];
+                    now->c[ch]->endOfString = now->c[ch]->endOfString || fnode->c[ch]->endOfString;
+                }
+
+                que.push_back(now->c[ch]);
+            }
+        }
+    }
 }
