@@ -1,27 +1,24 @@
-
-using VI = vector <int> ;
-using VVI = vector <VI> ;
-
+template<class T>
 class FenwickTree {
-    VI sum;
+    vector <T> sum;
 public:
     FenwickTree (int treeSize) {
-        sum = move(VI(treeSize+1));
+        sum = move(vector<T>(treeSize+1));
     }
 
-    void addVal(int idx, int val) {
+    void addVal(int idx, T val) {
         while (idx < sum.size()) {
             sum[idx] += val;
             idx += (idx & (-idx));
         }
     }
 
-    int getVal(int idx) {
+    T getVal(int idx) {
         if (idx <= 0) {
             return 0;
         }
 
-        int ret = 0;
+        T ret = 0;
 
         while (idx) {
             ret += sum[idx];
@@ -31,7 +28,7 @@ public:
         return ret;
     }
 
-    int queryRange(int a, int b) {
+    T queryRange(int a, int b) {
         return getVal(b) - getVal(a-1);
     }
 };
