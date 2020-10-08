@@ -36,6 +36,21 @@ struct TreeNode {
     }
 };
 
+template<class T>
+struct MinOp {
+    static bool cmp(T& v1, T& v2) {
+        return v1 < v2;
+    }
+};
+
+template<class T>
+struct MaxOp {
+    static bool cmp(T& v1, T& v2) {
+        return v1 > v2;
+    }
+};
+
+template<class C>
 class CartesianTree {
     TreeNode* root;
     unordered_map<int, TreeNode*> idxMap;
@@ -109,19 +124,18 @@ class CartesianTree {
 
     TreeNode* __buildCartesianTree(VI& seq) {
         vector <TreeNode*> stk;
-        auto cmp = [](int v1, int v2) { return v1 > v2; }; // customize this if type or order needs to be changed
 
         for (int i = 0; i < seq.size(); ++i) {
             TreeNode* now = new TreeNode(seq[i], i);
 
             // cout << "SEQ " << seq[i] << endl;
-            if (stk.empty() || cmp(stk.back()->val, seq[i])) {
+            if (stk.empty() || C::cmp(stk.back()->val, seq[i])) {
                 stk.push_back(now);
             } else {
                 // clearing the stack
                 TreeNode* topNode = nullptr;
 
-                while (!stk.empty() && !cmp(stk.back()->val, seq[i])) {
+                while (!stk.empty() && !C::cmp(stk.back()->val, seq[i])) {
                     stk.back()->rightChild = topNode;
                     if (topNode != nullptr) {
                         topNode->parent[0] = stk.back();
