@@ -76,7 +76,6 @@ class SegmentTree {
             }
 
             this->val = 0;
-            recalculateSum();
         }
     }
 
