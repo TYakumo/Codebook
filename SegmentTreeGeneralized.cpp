@@ -23,6 +23,30 @@ public:
 };
 
 template<class T>
+class AddMaxOp {
+public:
+    inline T op(T a, T b) {
+        return a + b;
+    }
+
+    inline T retOp(T a, T b) {
+        return max(a, b);
+    }
+
+    inline T childOp(T a, T b) {
+        return max(a, b);
+    }
+
+    inline T parentToChildOp(T a, T b) {
+        return a + b;
+    }
+
+    inline T sumOp(T val, T sx, T ex) {
+        return val;
+    }
+};
+
+template<class T>
 class MaxOp {
 public:
     inline T op(T a, T b) {
