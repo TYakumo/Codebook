@@ -1,121 +1,101 @@
-#include <cstdio>
-#include <cstring>
-#include <vector>
-#include <utility>
-using namespace std;
+template <typename T>
+struct Edge {
+    int to;
+    T w;
 
-struct hole
-{
-    long long t;
-    pair <int, int> dest;
+    Edge() {}
+    Edge(int pt, T pw) : to(pt), w(pw) { }
 };
 
-const int dr[] = {1, 0, -1, 0}, dc[] = {0, 1, 0, -1};
-const int MAXN = 31, MAXQ = MAXN*MAXN, inf = 100000000;
-int cnt[MAXN][MAXN], mmap[MAXN][MAXN];
-long long dis[MAXN][MAXN];
-bool in_que[MAXN][MAXN];
-hole holes[MAXN][MAXN];
-int R, C, G, E, front, rear;
-pair <int, int> que[MAXQ];
+template <typename T>
+class SPFA {
+    using VE = vector<Edge<T>>;
+    using VVE = vector<VE>;
+    using VI = vector <int>;
+    using VT = vector <T>;
+    // const T INF = 1000000000;
 
-bool valid(int r, int c)
-{
-    return r >= 0 && r < R && c >= 0 && c < C;
-}
+    int V;
+    VI prev;
+    VVE adja;
+    VT dist;
 
-void update(const int& r, const int& c, long long cost, int cc)
-{
-    if(cost < dis[r][c])
-    {
-        dis[r][c] = cost;
-        cnt[r][c] = cc+1;
-        
-        if(!in_que[r][c])
-        {
-            in_que[r][c] = true;
-            que[rear] = make_pair(r, c);
-            rear = (rear+1)%MAXQ;
-        }
+public:
+    SPFA(int PV) {
+        V = PV;
+        adja = VVE(V);
+        prev = VI(V, -1);
+        dist = VT(V, INF);
     }
-}
 
-int main()
-{
-    while(scanf("%d%d", &R, &C) && R)
-    {
-        //load and construct map
-        memset(mmap, 0, sizeof(mmap));
-        scanf("%d", &G);
-        for(int i = 0; i < G; i++)
-        {
-            int r, c;
-            scanf("%d %d", &r, &c);
-            mmap[r][c] = 2;
-        }
-        
-        E = R*C-1;
-        scanf("%d", &G);
-        for(int i = 0; i < G; i++)
-        {
-            int sx, sy, dx, dy, dt;
-            scanf("%d %d %d %d %d", &sx, &sy, &dx, &dy, &dt);
-            mmap[sx][sy] = 1;
-            holes[sx][sy].dest = make_pair(dx, dy), holes[sx][sy].t = dt;
-        }
-        
-        //SPFA
-        memset(cnt, 0, sizeof(cnt));
-        memset(in_que, false, sizeof(in_que));
-        for(int i = 0; i < R; i++)
-            for(int j = 0; j < C; j++)
-                dis[i][j] = inf;
-                
-        dis[0][0] = 0;
-        
-        bool negcyc = false;
-        que[0] = make_pair(0,0), front = 0, rear = 1;
-        
-        while(front != rear)
-        {
-            if(negcyc) break;
-            int nr = que[front].first, nc = que[front].second;            
-            in_que[nr][nc] = false;   
-                
-            if(nr==R-1&& nc==C-1)
-            {
-                front = (front+1)%MAXQ;
-                continue;
-            }
-            
-            if(mmap[nr][nc] == 1)
-            {
-                const pair <int, int> & tempq = holes[nr][nc].dest;
-                update(tempq.first, tempq.second, dis[nr][nc]+holes[nr][nc].t, cnt[nr][nc]);
-                if(cnt[tempq.first][tempq.second] > E) negcyc = true;
-                front = (front+1)%MAXQ;
-                continue;
-            }
-            
-            for(int i = 0; i < 4 && !negcyc; i++)
-            {
-                int newr = nr+dr[i], newc = nc+dc[i];
-                long long cost = dis[nr][nc]+1;
-                if(valid(newr, newc) && mmap[newr][newc] != 2)
-                {
-                        update(newr, newc, cost, cnt[nr][nc]);
-                        if(cnt[newr][newc] > E) negcyc = true;
+    bool sssp(int src) {
+        deque <int> que;
+        VI inQue(V);
+        VI prevTime(V);
+
+        dist[src] = 0;
+        inQue[src] = 1;
+        que.push_back(src);
+
+        while (!que.empty()) {
+            int now = que.front();
+            que.pop_front();
+
+            inQue[now] = 0;
+
+            for (int i = 0; i < adja[now].size(); ++i) {
+                int nextv = adja[now][i].to;
+                T newdist = dist[now] + adja[now][i].w;
+
+                if (newdist < dist[nextv]) {
+                    dist[nextv] = newdist;
+                    prev[nextv] = now;
+                    prevTime[nextv] = prevTime[now] + 1;
+
+                    if (prevTime[nextv] == V) {
+                        return true; // negative cycle
+                    }
+
+                    if (inQue[nextv] == 0) {
+
+                        if (que.empty() || dist[nextv] >= dist[que.front()]) {
+                            que.push_back(nextv);
+                        } else {
+                            que.push_front(nextv);
+                        }
+
+                        inQue[nextv] = 1;
+                    }
                 }
-            }        
-            
-            front = (front+1)%MAXQ;
+            }
         }
-        
-        if(negcyc) printf("Never\n");
-        else if(dis[R-1][C-1] < inf) printf("%lld\n", dis[R-1][C-1]);
-        else printf("Impossible\n");
-    }
-    
-    return 0;
-}
 
+        return false;
+    }
+
+    T getBest(int v) {
+        return dist[v];
+    }
+
+    void addEdge(int f, int t, T w) {
+        adja[f].emplace_back(Edge(t, w));
+    }
+
+    vector <int> findPath(int src, int dest) {
+        vector <int> ret;
+        int now = dest;
+
+        while (now != -1) {
+            ret.push_back(now);
+            now = prev[now];
+        }
+
+        if (!ret.empty() && ret.back() != src) { // src can't connect to dest
+            ret.clear();
+        } else {
+            reverse(ret.begin(), ret.end());
+        }
+
+        return ret;
+    }
+};
