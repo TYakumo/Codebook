@@ -13,7 +13,7 @@ class SPFA {
     using VVE = vector<VE>;
     using VI = vector <int>;
     using VT = vector <T>;
-    // const T INF = 1000000000;
+    const T INF = 1000000000;
 
     int V;
     VI prev;
