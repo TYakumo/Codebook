@@ -14,7 +14,7 @@ GCDInfo gcd(long long a, long long b) {
     // ax+by = g
     // bx'+(a-a/b*b)y' = g
     GCDInfo v = gcd(b, a%b);
-    return GCDInfo(v.y, v.x-(a/b)*v.y, v.g);
+    return GCDInfo(v.y%(b/v.g), (v.x-(a/b)*v.y)%(a/v.g), v.g);
 }
 
 // Get a * x mod p = 1
