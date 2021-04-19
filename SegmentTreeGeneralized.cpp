@@ -148,7 +148,7 @@ public:
             children[0]->updateSegment(x1, min(x2, mid), v);
         }
 
-        if (ex > mid) {
+        if (x2 > mid) {
             children[1]->updateSegment(max(x1, mid), x2, v);
         }
 
