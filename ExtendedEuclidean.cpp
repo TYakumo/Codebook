@@ -7,6 +7,10 @@ struct GCDInfo {
 };
 
 GCDInfo gcd(long long a, long long b) {
+    if (a == 0) {
+        return GCDInfo(0, 1, b);
+    }
+
     if (b == 0) {
         return GCDInfo(1, 0, a);
     }
